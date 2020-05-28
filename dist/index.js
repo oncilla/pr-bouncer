@@ -3514,7 +3514,7 @@ const github_1 = __webpack_require__(469);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const GITHUB_TOKEN = core.getInput('githubToken');
+            const GITHUB_TOKEN = core.getInput('github-token');
             const github = new github_1.GitHub(GITHUB_TOKEN);
             if (!github_1.context.payload.pull_request) {
                 core.setFailed('Action running on non-pull request');
