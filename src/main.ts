@@ -3,7 +3,7 @@ import {context, GitHub} from '@actions/github'
 
 async function run(): Promise<void> {
   try {
-    const GITHUB_TOKEN = core.getInput('githubToken')
+    const GITHUB_TOKEN = core.getInput('github-token')
     const github = new GitHub(GITHUB_TOKEN)
 
     if (!context.payload.pull_request) {
