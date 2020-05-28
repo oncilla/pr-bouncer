@@ -2,6 +2,10 @@ name: 'PR Bouncer'
 description: Bounce pull requests that are too big
 author: 'oncilla'
 inputs:
+  github-token:
+    description: |
+      Secret github token: secrets.GITHUB_TOKEN
+    required: true
   warning-size:
     description: |
       Number of added lines that cause warning.

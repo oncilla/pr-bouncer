@@ -20,6 +20,7 @@ jobs:
     - uses: actions/checkout@v1
     - uses: ./
       with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
         warning-size: '550'
         bounce-size: '1337'
         ignore-label: 'no-bounce-no'
