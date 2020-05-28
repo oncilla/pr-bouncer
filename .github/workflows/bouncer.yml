@@ -1,0 +1,15 @@
+name: ":rotating_light: Pull Request Bouncer"
+on:
+  pull_request: {}
+
+jobs:
+  bouncer:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: ./
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        warning-size: '550'
+        bounce-size: '1337'
+        ignore-label: 'ignore-bounce'
