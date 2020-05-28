@@ -79,9 +79,9 @@ function run() {
             const warnSize = safeParse('warning-size');
             const bounceSize = safeParse('bounce-size');
             const ignoreLabel = core.getInput('ignore-label');
-            core.debug(`warning-size: ${warnSize}`);
-            core.debug(`warning-size: ${bounceSize}`);
-            core.debug(`warning-size: ${ignoreLabel}`);
+            core.info(`warning-size: ${warnSize}`);
+            core.info(`bounce-size: ${bounceSize}`);
+            core.info(`ignore-label: ${ignoreLabel}`);
         }
         catch (error) {
             core.setFailed(error.message);
