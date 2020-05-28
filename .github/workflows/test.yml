@@ -19,5 +19,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: ./
-      with: 
-        milliseconds: 1000
+      with:
+        warning-size: '550'
+        bounce-size: '1337'
+        ignore-label: 'no-bounce-no'

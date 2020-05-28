@@ -3,17 +3,24 @@ import {wait} from './wait'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`)
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const warnSize = safeParse('warning-size')
+    const bounceSize = safeParse('bounce-size')
+    const ignoreLabel = core.getInput('ignore-label')
 
-    core.setOutput('time', new Date().toTimeString())
+    core.debug(`warning-size: ${warnSize}`)
+    core.debug(`warning-size: ${bounceSize}`)
+    core.debug(`warning-size: ${ignoreLabel}`)
+
   } catch (error) {
     core.setFailed(error.message)
   }
 }
 
-run()
+function safeParse(name: string): number {
+  var parsed = Number(core.getInput(name))
+  if (isNaN(parsed)) {
+    throw new Error(`${name} is not a number`)
+  }
+  return parsed
+}

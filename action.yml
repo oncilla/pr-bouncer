@@ -1,10 +1,40 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'PR Bouncer'
+description: Bounce pull requests that are too big
+author: 'oncilla'
 inputs:
-  myInput:              # change this
-    description: 'input description here'
-    default: 'default value if applicable'
+  warning-size:
+    description: |
+      Number of added lines that cause warning.
+
+      If the number of added lines of code exceed this threshold,
+      a warning message is added to the pull request.
+
+      Generated files are excluded from this rule.
+    required: false
+    default: '500'
+  bounce-size:
+    description: |
+      Number of added lines that cause pull request to be rejected.
+
+      If the number of added lines of code exceed this threshold,
+      an error message is added to the pull request, and it is automatically
+      closed. This can be turned of by specifying the ignore label on the pull
+      request.
+
+      Generated files are excluded from this rule.
+    required: false
+    default: '1000'
+  ignore-label:
+    description: |
+      Label to instruct bouncer to ignore the pull request.
+
+      If this label is specified, the PR bouncer does not automatically closed
+      the pull request.
+    required: false
+    default: 'no-bounce'
 runs:
   using: 'node12'
   main: 'dist/index.js'
+branding:
+  icon: 'crosshair'
+  color: 'orange'
