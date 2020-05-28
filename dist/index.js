@@ -89,12 +89,13 @@ function run() {
     });
 }
 function safeParse(name) {
-    var parsed = Number(core.getInput(name));
+    let parsed = Number(core.getInput(name));
     if (isNaN(parsed)) {
         throw new Error(`${name} is not a number`);
     }
     return parsed;
 }
+run();
 
 
 /***/ }),
