@@ -17,6 +17,8 @@ warning message, and instruct the pull request author to split the pull request.
 You can exclude files from counting towards the total additions, either based
 on on the file path, or based on specific markers in the file.
 
+Messages can be customized to give a personal touch.
+
 ## Usage
 
 ```yml
@@ -32,10 +34,14 @@ jobs:
     - uses: oncilla/pr-bouncer@v1
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        warning-size: '500'
-        bounce-size: '100'
+        warning-size: '750'
+        bounce-size: '1000'
         ignore-label: 'no-bounce'
         file-excluders: '_test.go,\/mock_,BUILD.bazel'
         generated-markers: 'GENERATED FILE DO NOT EDIT'
-        auto-close: 'true'
+        auto-close: 'false'
+        warning-message: 'Custom warning message'
+        bounce-message: 'Custom bounce message'
 ```
+
+Check out the default values: [action.yml](action.yml)
