@@ -3,6 +3,9 @@
 import * as core from '@actions/core'
 import {context, GitHub} from '@actions/github'
 
+import {additions} from './file'
+import {Config} from './config'
+
 async function run(): Promise<void> {
   try {
     const GITHUB_TOKEN = core.getInput('github-token')
@@ -12,16 +15,10 @@ async function run(): Promise<void> {
       core.setFailed('Action running on non-pull request')
       return
     }
+    core.info('Checking pull request for additions:')
 
-    const warnSize = safeParse('warning-size')
-    const bounceSize = safeParse('bounce-size')
-    const ignoreLabel = core.getInput('ignore-label')
-    const autoClose = Boolean(core.getInput('auto-close'))
-
-    core.info('Checking if pull request should be bounced:')
-    core.info(`warning-size: ${warnSize}`)
-    core.info(`bounce-size: ${bounceSize}`)
-    core.info(`ignore-label: ${ignoreLabel}`)
+    const cfg = new Config()
+    core.info(JSON.stringify({config: cfg}, null, 4))
 
     const req = {
       ...context.repo,
@@ -30,28 +27,36 @@ async function run(): Promise<void> {
 
     const pr = await github.pulls.get(req)
     for (const label of pr.data.labels) {
-      if (label.name === ignoreLabel) {
+      if (label.name === cfg.ignoreLabel) {
         core.info('Ignoring pull request with label set.')
         return
       }
     }
 
     const files = await github.pulls.listFiles(req)
-    const count = countAdditions(files.data)
-    if (count >= bounceSize) {
+    const result = await additions(
+      files.data,
+      cfg.fileExcluders,
+      cfg.generatedMarkers
+    )
+    core.info(JSON.stringify({result}, null, 4))
+
+    const count = result.additions
+
+    if (count >= cfg.bounceSize) {
       await github.issues.createComment({
         ...context.repo,
         issue_number: context.payload.pull_request.number,
         body: `:rotating_light: Pull request bounced :rotating_light:
 
-The pull request has more than ${bounceSize} additional lines of code.
+The pull request has more than ${cfg.bounceSize} additional lines of code.
 Please split it into smaller chunks.
 
 If the pull request absolutely needs to be this big, ask a maintainer to set
 the ignore flag.
 `
       })
-      if (autoClose) {
+      if (cfg.autoClose) {
         github.pulls.update({
           ...context.repo,
           pull_number: context.payload.pull_request.number,
@@ -60,13 +65,13 @@ the ignore flag.
       }
       core.setFailed('Exceeded maximum pull request size')
       return
-    } else if (count >= warnSize) {
+    } else if (count >= cfg.warnSize) {
       await github.issues.createComment({
         ...context.repo,
         issue_number: context.payload.pull_request.number,
         body: `:warning: Pull request is big :warning:
 
-The pull request has more than ${warnSize} additional lines of code.
+The pull request has more than ${cfg.warnSize} additional lines of code.
 Please split it into smaller chunks.
 
 If the pull request absolutely needs to be this big, ask a maintainer to set
@@ -77,28 +82,6 @@ the ignore flag.
   } catch (error) {
     core.setFailed(error.message)
   }
-}
-
-interface File {
-  filename: string
-  additions: number
-}
-
-function countAdditions(files: File[]): number {
-  let count = 0
-  for (const file of files) {
-    // TODO(roosd): filter generated files.
-    count += file.additions
-  }
-  return count
-}
-
-function safeParse(name: string): number {
-  const parsed = Number(core.getInput(name))
-  if (isNaN(parsed)) {
-    throw new Error(`${name} is not a number`)
-  }
-  return parsed
 }
 
 run()

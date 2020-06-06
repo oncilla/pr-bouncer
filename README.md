@@ -14,10 +14,13 @@ let the bouncer automatically close the pull request.
 Furthermore, you can specify a threshold above which the bouncer will comment a
 warning message, and instruct the pull request author to split the pull request.
 
+You can exclude files from counting towards the total additions, either based
+on on the file path, or based on specific markers in the file.
+
 ## Usage
 
 ```yml
-name: ":rotating_light: Pull Request Bouncer"
+name: "Pull Request Bouncer"
 on:
   pull_request: {}
 
@@ -32,5 +35,7 @@ jobs:
         warning-size: '500'
         bounce-size: '100'
         ignore-label: 'no-bounce'
+        file-excluders: '_test.go,\/mock_,BUILD.bazel'
+        generated-markers: 'GENERATED FILE DO NOT EDIT'
         auto-close: 'true'
 ```

@@ -1,4 +1,4 @@
-name: ":rotating_light: Pull Request Bouncer"
+name: "Pull Request Bouncer"
 on:
   pull_request: {}
 
@@ -13,3 +13,4 @@ jobs:
         warning-size: '550'
         bounce-size: '1337'
         ignore-label: 'ignore-bounce'
+        file-excluders: 'dist'
