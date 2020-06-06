@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/camelcase */
 
 import * as core from '@actions/core'
-import {context, GitHub} from '@actions/github'
+import { context, GitHub } from '@actions/github'
 
-import {additions} from './file'
-import {Config} from './config'
+import { additions } from './file'
+import { Config } from './config'
 
 async function run(): Promise<void> {
   try {
@@ -18,7 +18,7 @@ async function run(): Promise<void> {
     core.info('Checking pull request for additions:')
 
     const cfg = new Config()
-    core.info(JSON.stringify({config: cfg}, null, 4))
+    core.info(JSON.stringify({ config: cfg }, null, 4))
 
     const req = {
       ...context.repo,
@@ -39,22 +39,17 @@ async function run(): Promise<void> {
       cfg.fileExcluders,
       cfg.generatedMarkers
     )
-    core.info(JSON.stringify({result}, null, 4))
+    core.info(JSON.stringify({ result }, null, 4))
 
-    const count = result.additions
+    const replacers = new Map<string, string>()
+    replacers.set('{BOUNCE-SIZE}', cfg.bounceSize.toString())
+    replacers.set('{WARNING-SIZE}', cfg.bounceSize.toString())
 
-    if (count >= cfg.bounceSize) {
+    if (result.additions >= cfg.bounceSize) {
       await github.issues.createComment({
         ...context.repo,
         issue_number: context.payload.pull_request.number,
-        body: `:rotating_light: Pull request bounced :rotating_light:
-
-The pull request has more than ${cfg.bounceSize} additional lines of code.
-Please split it into smaller chunks.
-
-If the pull request absolutely needs to be this big, ask a maintainer to set
-the ignore flag.
-`
+        body: format(cfg.bounceMessage, replacers),
       })
       if (cfg.autoClose) {
         github.pulls.update({
@@ -65,23 +60,28 @@ the ignore flag.
       }
       core.setFailed('Exceeded maximum pull request size')
       return
-    } else if (count >= cfg.warnSize) {
+    }
+    if (result.additions >= cfg.warnSize) {
       await github.issues.createComment({
         ...context.repo,
         issue_number: context.payload.pull_request.number,
-        body: `:warning: Pull request is big :warning:
-
-The pull request has more than ${cfg.warnSize} additional lines of code.
-Please split it into smaller chunks.
-
-If the pull request absolutely needs to be this big, ask a maintainer to set
-the ignore flag.
-`
+        body: format(cfg.warnMessage, replacers),
       })
+      return
     }
   } catch (error) {
     core.setFailed(error.message)
   }
+}
+
+function format(message: string, replacers: Map<string, string>): string {
+  for (const [matcher, value] of replacers) {
+    const re = RegExp(matcher)
+    while (re.test(message)) {
+      message = message.replace(matcher, value)
+    }
+  }
+  return message
 }
 
 run()

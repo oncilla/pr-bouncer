@@ -15,7 +15,7 @@ inputs:
 
       Generated files are excluded from this rule.
     required: false
-    default: '500'
+    default: '750'
   bounce-size:
     description: |
       Number of added lines that cause pull request to be rejected.
@@ -60,6 +60,29 @@ inputs:
       Automatically close pull request if it exceeds the bounce-size.
     required: false
     default: 'false'
+  warning-message:
+    description: |
+      Message to be posted as warning on big pull requests.
+    required: false
+    default: |
+      Thank you for the contribution.
+
+      The pull request is rather big. It exceeds {WARNING-SIZE} additions of
+      code. Please consider splitting the pull request into multiple
+      contribution to make the review process easier.
+  bounce-message:
+    description: |
+      Message to be posted on bounced pull requests.
+    required: false
+    default: |
+      Thank you for the contribution.
+
+      The pull request exceeds {BOUNCE-SIZE} of allowed additions. Please
+      consider splitting the pull request into multiple contributions to make
+      the review process easier for both you and the maintainer.
+
+      If this pull request absolutely needs to be this big, contact a maintainer
+      and they can whitelist this PR,
 runs:
   using: 'node12'
   main: 'dist/index.js'

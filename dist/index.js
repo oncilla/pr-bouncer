@@ -3834,37 +3834,35 @@ function run() {
             const files = yield github.pulls.listFiles(req);
             const result = yield file_1.additions(files.data, cfg.fileExcluders, cfg.generatedMarkers);
             core.info(JSON.stringify({ result }, null, 4));
-            const count = result.additions;
-            if (count >= cfg.bounceSize) {
-                yield github.issues.createComment(Object.assign(Object.assign({}, github_1.context.repo), { issue_number: github_1.context.payload.pull_request.number, body: `:rotating_light: Pull request bounced :rotating_light:
-
-The pull request has more than ${cfg.bounceSize} additional lines of code.
-Please split it into smaller chunks.
-
-If the pull request absolutely needs to be this big, ask a maintainer to set
-the ignore flag.
-` }));
+            const replacers = new Map();
+            replacers.set('{BOUNCE-SIZE}', cfg.bounceSize.toString());
+            replacers.set('{WARNING-SIZE}', cfg.bounceSize.toString());
+            if (result.additions >= cfg.bounceSize) {
+                yield github.issues.createComment(Object.assign(Object.assign({}, github_1.context.repo), { issue_number: github_1.context.payload.pull_request.number, body: format(cfg.bounceMessage, replacers) }));
                 if (cfg.autoClose) {
                     github.pulls.update(Object.assign(Object.assign({}, github_1.context.repo), { pull_number: github_1.context.payload.pull_request.number, state: 'closed' }));
                 }
                 core.setFailed('Exceeded maximum pull request size');
                 return;
             }
-            else if (count >= cfg.warnSize) {
-                yield github.issues.createComment(Object.assign(Object.assign({}, github_1.context.repo), { issue_number: github_1.context.payload.pull_request.number, body: `:warning: Pull request is big :warning:
-
-The pull request has more than ${cfg.warnSize} additional lines of code.
-Please split it into smaller chunks.
-
-If the pull request absolutely needs to be this big, ask a maintainer to set
-the ignore flag.
-` }));
+            if (result.additions >= cfg.warnSize) {
+                yield github.issues.createComment(Object.assign(Object.assign({}, github_1.context.repo), { issue_number: github_1.context.payload.pull_request.number, body: format(cfg.warnMessage, replacers) }));
+                return;
             }
         }
         catch (error) {
             core.setFailed(error.message);
         }
     });
+}
+function format(message, replacers) {
+    for (const [matcher, value] of replacers) {
+        const re = RegExp(matcher);
+        while (re.test(message)) {
+            message = message.replace(matcher, value);
+        }
+    }
+    return message;
 }
 run();
 
@@ -7717,6 +7715,8 @@ class Config {
     constructor() {
         this.warnSize = safeParse('warning-size');
         this.bounceSize = safeParse('bounce-size');
+        this.warnMessage = core.getInput('warning-message');
+        this.bounceMessage = core.getInput('bounce-message');
         this.ignoreLabel = core.getInput('ignore-label');
         this.autoClose = Boolean(core.getInput('auto-close'));
         const f = (all) => {
